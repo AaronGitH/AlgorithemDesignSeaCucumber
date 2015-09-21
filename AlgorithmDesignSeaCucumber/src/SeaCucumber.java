@@ -19,7 +19,7 @@ public class SeaCucumber {
     static char[] letter = {'A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V', 'B', 'Z', 'X', '*'};
     
     public static void main(String[] args) throws FileNotFoundException{
-        File file = new File("HbB_FASTAs-in.txt");
+        File file = new File("Toy_FASTAs-in.txt");
         Scanner sc = new Scanner(file);        
         
         String sequenceIn = "";
@@ -36,7 +36,7 @@ public class SeaCucumber {
                 }
                 sequenceNames.add(fields[0]);
             }else{
-                sequenceIn +=  fields[0];
+                sequenceIn += fields[0];
             }
         }
         List<Byte> seq = new ArrayList();
@@ -47,20 +47,27 @@ public class SeaCucumber {
         scores = getScores();
         
         
-        
-        System.out.println(sequenceAlignment());
+        System.out.println("\n\n"+sequenceAlignment()+"\n");
         //output();
     }
     
     static int sequenceAlignment(){
 
         List<Byte> m = sequences.get(0); 
-        List<Byte> n = sequences.get(3); 
+        List<Byte> n = sequences.get(2); 
         
+        System.out.print("\n"+sequenceNames.get(0)+": "+"\n");
+        sequences.get(0).stream().forEach((val) -> {
+            System.out.print( letter[val] );
+        });
+        System.out.print("\n"+sequenceNames.get(2)+": "+"\n");
+        sequences.get(2).stream().forEach((val) -> {
+            System.out.print( letter[val] );
+        });
         
         // SEQUENCE-ALIGNMENT (m, n, x1, …, xm, y1, …, yn, δ, α)
         // ______________________________________________________
-        int delta = mapScores('*');
+        int delta = -4; // hardcore hard-code
         
         int M[][] = new int[m.size()][n.size()]; 
         // FOR i = 0 TO m
@@ -71,7 +78,7 @@ public class SeaCucumber {
         // FOR j = 0 TO n
         for(int j=0; j<n.size(); j++){
             // M [0, j] <- j δ.
-            M[0][j] = j* delta;
+            M[0][j] = j * delta;
         }
         
         // FOR i = 1 TO m
@@ -80,15 +87,21 @@ public class SeaCucumber {
             for(int j=1; j<n.size(); j++){
                 // M [i, j] <- min { 
                 M[i][j] = Math.max(Math.max(
-                    // δ + M [i – 1, j],
-                    delta + M[i - 1][j],
-                    // δ + M [i, j – 1]),
-                    delta + M[i][j-1]),
                     // α[x_i, y_j] + M [i – 1, j – 1].
-                    scores[m.get(i)][n.get(j)] + M[i - 1][j - 1]
-                );
+                    scores[m.get(i)][n.get(j)] + M[i - 1][j - 1],
+                    // δ + M [i – 1, j],
+                    delta + M[i - 1][j]),
+                    // δ + M [i, j – 1]),
+                    delta + M[i][j - 1]);
             }
         }
+        for(int i=0; i<m.size(); i++){
+            System.out.print("\n");
+            for(int j=0; j<n.size(); j++){
+                System.out.printf("%3d ",M[i][j]);
+            }
+        }
+        
         // RETURN M [m, n].
         return M[m.size()-1][n.size()-1];
     }
@@ -138,5 +151,4 @@ public class SeaCucumber {
         {-4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, 1}};
         return scoreTable;
     }
-    
 }
