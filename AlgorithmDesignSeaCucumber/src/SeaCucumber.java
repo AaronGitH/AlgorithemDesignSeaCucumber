@@ -79,7 +79,7 @@ public class SeaCucumber {
             // FOR j = 1 TO n
             for(int j=1; j<n.size(); j++){
                 // M [i, j] <- min { 
-                M[i][j] = Math.min(Math.min(
+                M[i][j] = Math.max(Math.max(
                     // δ + M [i – 1, j],
                     delta + M[i - 1][j],
                     // δ + M [i, j – 1]),
