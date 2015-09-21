@@ -47,16 +47,31 @@ public class SeaCucumber {
         scores = getScores();
         
         
-        System.out.println("\n\n"+sequenceAlignment()+"\n");
+        //######################################################################
+        for(int i=0; i<sequences.size(); i++){            
+            int bestMatch = -1;
+            int bestResultSoFar = Integer.MIN_VALUE;
+            for(int j=0; j<sequences.size(); j++){                
+                if(j == i) continue;
+                int res = sequenceAlignment(sequences.get(i),sequences.get(j));
+                
+                that s all nonsense;
+                
+                System.out.print("\n"+sequenceNames.get(i)+"--"+sequenceNames.get(j)+": "+res+"\n");
+                
+                if(res > bestResultSoFar){
+                    bestResultSoFar = res;
+                    bestMatch = j;
+                }
+            }
+            //System.out.print("\n"+sequenceNames.get(i)+"--"+sequenceNames.get(bestMatch)+": "+bestResultSoFar+"\n");
+        }
+        
         //output();
     }
     
     // SEQUENCE-ALIGNMENT (m, n, x1, …, xm, y1, …, yn, δ, α)
-    static int sequenceAlignment(){
-
-        List<Byte> m = sequences.get(2); 
-        List<Byte> n = sequences.get(1); 
-        
+    static int sequenceAlignment(List<Byte> m, List<Byte> n){
         int delta = -4; // hardcore hard-code
         
         int M[][] = new int[m.size()+1][n.size()+1]; 
@@ -85,10 +100,22 @@ public class SeaCucumber {
                     delta + M[i][j - 1]);
             }
         }
+//        for(int i=0; i<m.size()+1; i++){
+//            System.out.print("\n");
+//            for(int j=0; j<n.size()+1; j++){
+//                System.out.printf("%3d ",M[i][j]);
+//            }
+//        }
+        //######################################################################
         for(int i=0; i<m.size()+1; i++){
-            System.out.print("\n");
+            
+            
+            // the backtracking
+            
+            
             for(int j=0; j<n.size()+1; j++){
-                System.out.printf("%3d ",M[i][j]);
+                
+                
             }
         }
         
@@ -98,7 +125,7 @@ public class SeaCucumber {
     
     static void output(){
         for(int i=0; i<sequences.size(); i++){
-            System.out.print("\n"+sequenceNames.get(i)+": "+"\n");
+            
             for(byte val: sequences.get(i)){
                 System.out.print( letter[val] );
             }
