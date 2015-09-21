@@ -18,8 +18,8 @@ public class SeaCucumber {
     static List<List<Byte>> sequences = new ArrayList();
     static char[] letter = {'A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V', 'B', 'Z', 'X', '*'};
     
-    public static void main(String[] args) throws FileNotFoundException {
-        File file = new File("Toy_FASTAs-in.txt");
+    public static void main(String[] args) throws FileNotFoundException{
+        File file = new File("HbB_FASTAs-in.txt");
         Scanner sc = new Scanner(file);        
         
         String sequenceIn = "";
@@ -48,35 +48,65 @@ public class SeaCucumber {
         
         
         
-        //SEQUENCE-ALIGNMENT (m, n, x1, …, xm, y1, …, yn, δ, α)
-        // _____________________________________________________
-        //
-        //FOR i = 0 TO m
-        //M [i, 0] <- i δ.
-        //FOR j = 0 TO n
-        //M [0, j] <- j δ.
-        //FOR i = 1 TO m
-        //FOR j = 1 TO n
-        //M [i, j] <- min { α[xi, yj] + M [i – 1, j – 1],
-        //δ + M [i – 1, j],
-        //δ + M [i, j – 1]).
-        //RETURN M [m, n].
+        System.out.println(sequenceAlignment());
+        //output();
+    }
+    
+    static int sequenceAlignment(){
+
+        List<Byte> m = sequences.get(0); 
+        List<Byte> n = sequences.get(3); 
         
         
+        // SEQUENCE-ALIGNMENT (m, n, x1, …, xm, y1, …, yn, δ, α)
+        // ______________________________________________________
+        int delta = mapScores('*');
+        
+        int M[][] = new int[m.size()][n.size()]; 
+        // FOR i = 0 TO m
+        for(int i=0; i<m.size(); i++){
+            // M [i, 0] <- i δ.
+            M[i][0] = i * delta;
+        }
+        // FOR j = 0 TO n
+        for(int j=0; j<n.size(); j++){
+            // M [0, j] <- j δ.
+            M[0][j] = j* delta;
+        }
+        
+        // FOR i = 1 TO m
+        for(int i=1; i<m.size(); i++){
+            // FOR j = 1 TO n
+            for(int j=1; j<n.size(); j++){
+                // M [i, j] <- min { 
+                M[i][j] = Math.min(Math.min(
+                    // δ + M [i – 1, j],
+                    delta + M[i - 1][j],
+                    // δ + M [i, j – 1]),
+                    delta + M[i][j-1]),
+                    // α[x_i, y_j] + M [i – 1, j – 1].
+                    scores[m.get(i)][n.get(j)] + M[i - 1][j - 1]
+                );
+            }
+        }
+        // RETURN M [m, n].
+        return M[m.size()-1][n.size()-1];
+    }
+    
+    static void output(){
         for(int i=0; i<sequences.size(); i++){
             System.out.print("\n"+sequenceNames.get(i)+": "+"\n");
             for(byte val: sequences.get(i)){
                 System.out.print( letter[val] );
             }
         }
+        System.out.println("\n");
     }
     
     static byte mapScores(char s){        
-        for(byte i = 0; i < letter.length - 1; i++){
-            if( s == letter[i]){
+        for(byte i = 0; i < letter.length - 1; i++)
+            if( s == letter[i])
                 return i;
-            }
-        }        
         return (byte)(letter.length - 1); // '*'
     }
     
