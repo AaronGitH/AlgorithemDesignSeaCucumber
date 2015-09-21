@@ -51,59 +51,49 @@ public class SeaCucumber {
         //output();
     }
     
+    // SEQUENCE-ALIGNMENT (m, n, x1, …, xm, y1, …, yn, δ, α)
     static int sequenceAlignment(){
 
-        List<Byte> m = sequences.get(0); 
-        List<Byte> n = sequences.get(2); 
+        List<Byte> m = sequences.get(2); 
+        List<Byte> n = sequences.get(1); 
         
-        System.out.print("\n"+sequenceNames.get(0)+": "+"\n");
-        sequences.get(0).stream().forEach((val) -> {
-            System.out.print( letter[val] );
-        });
-        System.out.print("\n"+sequenceNames.get(2)+": "+"\n");
-        sequences.get(2).stream().forEach((val) -> {
-            System.out.print( letter[val] );
-        });
-        
-        // SEQUENCE-ALIGNMENT (m, n, x1, …, xm, y1, …, yn, δ, α)
-        // ______________________________________________________
         int delta = -4; // hardcore hard-code
         
-        int M[][] = new int[m.size()][n.size()]; 
+        int M[][] = new int[m.size()+1][n.size()+1]; 
         // FOR i = 0 TO m
-        for(int i=0; i<m.size(); i++){
+        for(int i=0; i<m.size()+1; i++){
             // M [i, 0] <- i δ.
             M[i][0] = i * delta;
         }
         // FOR j = 0 TO n
-        for(int j=0; j<n.size(); j++){
+        for(int j=0; j<n.size()+1; j++){
             // M [0, j] <- j δ.
             M[0][j] = j * delta;
         }
         
         // FOR i = 1 TO m
-        for(int i=1; i<m.size(); i++){
+        for(int i=1; i<m.size()+1; i++){
             // FOR j = 1 TO n
-            for(int j=1; j<n.size(); j++){
+            for(int j=1; j<n.size()+1; j++){
                 // M [i, j] <- min { 
                 M[i][j] = Math.max(Math.max(
                     // α[x_i, y_j] + M [i – 1, j – 1].
-                    scores[m.get(i)][n.get(j)] + M[i - 1][j - 1],
+                    scores[m.get(i-1)][n.get(j-1)] + M[i - 1][j - 1],
                     // δ + M [i – 1, j],
                     delta + M[i - 1][j]),
                     // δ + M [i, j – 1]),
                     delta + M[i][j - 1]);
             }
         }
-        for(int i=0; i<m.size(); i++){
+        for(int i=0; i<m.size()+1; i++){
             System.out.print("\n");
-            for(int j=0; j<n.size(); j++){
+            for(int j=0; j<n.size()+1; j++){
                 System.out.printf("%3d ",M[i][j]);
             }
         }
         
         // RETURN M [m, n].
-        return M[m.size()-1][n.size()-1];
+        return M[m.size()][n.size()];
     }
     
     static void output(){
