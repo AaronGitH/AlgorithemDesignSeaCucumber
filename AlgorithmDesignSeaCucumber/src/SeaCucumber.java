@@ -48,49 +48,47 @@ public class SeaCucumber {
         
         
         //######################################################################
-        for(int i=0; i<sequences.size(); i++){            
-            int bestMatch = -1;
-            int bestResultSoFar = Integer.MIN_VALUE;
+//        System.out.print("\n"+sequenceNames.get(0)+"--"+sequenceNames.get(1)+": ");
+//        int res = sequenceAlignment(sequences.get(0),sequences.get(1));
+//        System.out.print("\n\n");
+        
+        for(int i=0; i<sequences.size(); i++){
+            
             for(int j=0; j<sequences.size(); j++){                
                 if(j == i) continue;
-                int res = sequenceAlignment(sequences.get(i),sequences.get(j));
                 
-                that s all nonsense;
-                
-                System.out.print("\n"+sequenceNames.get(i)+"--"+sequenceNames.get(j)+": "+res+"\n");
-                
-                if(res > bestResultSoFar){
-                    bestResultSoFar = res;
-                    bestMatch = j;
-                }
+                System.out.print("\n"+sequenceNames.get(i)+"--"+sequenceNames.get(j)+": ");
+                sequenceAlignment(sequences.get(i),sequences.get(j));
+                System.out.print("\n");
             }
-            //System.out.print("\n"+sequenceNames.get(i)+"--"+sequenceNames.get(bestMatch)+": "+bestResultSoFar+"\n");
         }
-        
-        //output();
     }
     
     // SEQUENCE-ALIGNMENT (m, n, x1, …, xm, y1, …, yn, δ, α)
     static int sequenceAlignment(List<Byte> m, List<Byte> n){
-        int delta = -4; // hardcore hard-code
+        int delta = -4; // hardcore hard-code        
+        int M[][] = new int[m.size()+1][n.size()+1];
         
-        int M[][] = new int[m.size()+1][n.size()+1]; 
+        Tuple[][] backtrackingPointer = new Tuple[m.size()+1][n.size()+1];
+        
         // FOR i = 0 TO m
         for(int i=0; i<m.size()+1; i++){
             // M [i, 0] <- i δ.
             M[i][0] = i * delta;
+            backtrackingPointer[i][0] = new Tuple(i, 0);
         }
         // FOR j = 0 TO n
         for(int j=0; j<n.size()+1; j++){
             // M [0, j] <- j δ.
             M[0][j] = j * delta;
+            backtrackingPointer[0][j] = new Tuple(0, j);
         }
         
         // FOR i = 1 TO m
         for(int i=1; i<m.size()+1; i++){
             // FOR j = 1 TO n
             for(int j=1; j<n.size()+1; j++){
-                // M [i, j] <- min { 
+                // M [i, j] <- min {
                 M[i][j] = Math.max(Math.max(
                     // α[x_i, y_j] + M [i – 1, j – 1].
                     scores[m.get(i-1)][n.get(j-1)] + M[i - 1][j - 1],
@@ -98,40 +96,93 @@ public class SeaCucumber {
                     delta + M[i - 1][j]),
                     // δ + M [i, j – 1]),
                     delta + M[i][j - 1]);
+
+                int opt1 = M[i - 1][j - 1];
+                int opt2 = M[i - 1][j];
+                int opt3 = M[i][j - 1];
+                int bestOpt = Integer.MIN_VALUE;
+                
+                if(opt1 > bestOpt){
+                   bestOpt = opt1;
+                   backtrackingPointer[i][j] = new Tuple(i-1, j-1);
+                }
+                if(opt2 > bestOpt){
+                   bestOpt = opt2;
+                   backtrackingPointer[i][j] = new Tuple(i-1, j);
+                }
+                if(opt3 > bestOpt){
+                   backtrackingPointer[i][j] = new Tuple(i , j-1);
+                }                
             }
         }
-//        for(int i=0; i<m.size()+1; i++){
-//            System.out.print("\n");
-//            for(int j=0; j<n.size()+1; j++){
-//                System.out.printf("%3d ",M[i][j]);
-//            }
-//        }
-        //######################################################################
         for(int i=0; i<m.size()+1; i++){
-            
-            
-            // the backtracking
-            
-            
+            System.out.print("\n");
             for(int j=0; j<n.size()+1; j++){
-                
-                
+                System.out.printf(" (x:"+i+" y:"+j+"=> %3d",M[i][j]);
+                System.out.print(")");
             }
+        }
+        System.out.print("\n");
+        for(int i=0; i<m.size()+1; i++){
+            System.out.print("\n");
+            for(int j=0; j<n.size()+1; j++){
+                System.out.print(" (x:"+i+" y:"+j+"=> [x:"+backtrackingPointer[i][j].i+",y:"+backtrackingPointer[i][j].j+"])");
+            }
+        }
+
+        // Backtracking
+        List<Byte> closestSequenceM = new ArrayList();
+        List<Byte> closestSequenceN = new ArrayList();
+        
+        Tuple lastPos = new Tuple(m.size(), n.size());
+        
+        while(lastPos.i > 0 || lastPos.j > 0){
+            Tuple currPos = backtrackingPointer[lastPos.i][lastPos.j];
+            
+            if(currPos.i == lastPos.i && currPos.j < lastPos.j){
+                closestSequenceM.add(mapScores('*'));
+                closestSequenceN.add(n.get(lastPos.j-1));
+            }
+            if(currPos.i < lastPos.i && currPos.j == lastPos.j){
+                closestSequenceM.add(m.get(lastPos.i-1));
+                closestSequenceN.add(mapScores('*'));
+            }
+            if(currPos.i < lastPos.i && currPos.j < lastPos.j){
+                closestSequenceM.add(m.get(lastPos.i-1));
+                closestSequenceN.add(n.get(lastPos.j-1));
+            }     
+            lastPos = currPos;
         }
         
+        System.out.print("\n");
+        System.out.print(M[m.size()][n.size()]+"\n");
+        for(int i = closestSequenceM.size()-1; i >= 0; i--){
+            System.out.print( letter[closestSequenceM.get(i)] );
+        }
+        System.out.print("\n");
+        for(int i = closestSequenceM.size()-1; i >= 0; i--){
+            System.out.print( letter[closestSequenceN.get(i)] );
+        }
+        
+//        for(byte val: closestSequenceM){
+//            System.out.print( letter[val] );
+//        }
+//        System.out.print("\n");
+//        for(byte val: closestSequenceN){
+//            System.out.print( letter[val] );
+//        }
         // RETURN M [m, n].
         return M[m.size()][n.size()];
     }
     
-    static void output(){
-        for(int i=0; i<sequences.size(); i++){
-            
-            for(byte val: sequences.get(i)){
-                System.out.print( letter[val] );
-            }
-        }
-        System.out.println("\n");
-    }
+    static class Tuple{ 
+        public final int i; 
+        public final int j; 
+        public Tuple(int i, int j){
+            this.i = i;
+            this.j = j; 
+        } 
+    } 
     
     static byte mapScores(char s){        
         for(byte i = 0; i < letter.length - 1; i++)
