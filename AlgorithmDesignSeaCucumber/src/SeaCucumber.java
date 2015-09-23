@@ -16,7 +16,7 @@ public class SeaCucumber {
     static byte[][] scores;    
     static List<String> sequenceNames = new ArrayList();
     static List<List<Byte>> sequences = new ArrayList();
-    static char[] letter = {'A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V', 'B', 'Z', 'X', '*'};
+    static char[] letter = {'A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V', 'B', 'Z', 'X', '-'};
     
     public static void main(String[] args) throws FileNotFoundException{
         File file = new File("Toy_FASTAs-in.txt");
