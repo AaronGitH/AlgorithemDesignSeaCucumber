@@ -1,5 +1,3 @@
-
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,7 +6,6 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
 
 /**
  * @author Sarah de Voss <satv@itu.dk>
@@ -23,9 +20,8 @@ public class SeaCucumber {
     static char[] letter = {'A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V', 'B', 'Z', 'X', '-'};
     
     public static void main(String[] args) throws FileNotFoundException{
-        File file = new File("Toy_FASTAs-in.txt");
-        Scanner sc = new Scanner(file);        
-        
+        //File file = new File("HbB_FASTAs-in.txt"); Scanner sc = new Scanner(file);        
+        Scanner sc = new Scanner(System.in);
         String sequenceIn = "";
         while(sc.hasNextLine()) {
             String[] fields = sc.nextLine().trim().split(" ");
@@ -50,13 +46,11 @@ public class SeaCucumber {
         sequences.add(seq);
         scores = getScores();
         
-        
         Map<Integer, SortedSet<Integer>> alignedPairs = new HashMap();
         for(int i=0; i < sequences.size(); i++){
             alignedPairs.put(i, new TreeSet());
             alignedPairs.get(i).add(i);  // no self Alignment
-        }
-        
+        }        
         for(int i=0; i<sequences.size(); i++){            
             for(int j=0; j<sequences.size(); j++){                
                 if(alignedPairs.get(i).contains(j)) continue;
@@ -75,8 +69,7 @@ public class SeaCucumber {
     
     static AlignmentResult sequenceAlignment(List<Byte> m, List<Byte> n){
         int delta = -4; // hardcore hard-code        
-        int M[][] = new int[m.size()+1][n.size()+1];
-        
+        int M[][] = new int[m.size()+1][n.size()+1];        
         Tuple[][] backtrackingPointer = new Tuple[m.size()+1][n.size()+1];
         
         for(int i=0; i<m.size()+1; i++){
@@ -91,13 +84,6 @@ public class SeaCucumber {
         
         for(int i=1; i<m.size()+1; i++){
             for(int j=1; j<n.size()+1; j++){
-//                M[i][j] = Math.max(Math.max(
-//                    // α[x_i, y_j] + M [i – 1, j – 1].
-//                    scores[m.get(i-1)][n.get(j-1)] + M[i - 1][j - 1],
-//                    // δ + M [i – 1, j],
-//                    delta + M[i - 1][j]),
-//                    // δ + M [i, j – 1]),
-//                    delta + M[i][j - 1]);
 
                 int opt1 = scores[m.get(i-1)][n.get(j-1)] + M[i - 1][j - 1];
                 int opt2 = delta + M[i - 1][j];
@@ -113,32 +99,16 @@ public class SeaCucumber {
                    backtrackingPointer[i][j] = new Tuple(i-1, j);
                 }
                 if(opt3 > bestOpt){
-                    bestOpt = opt3;
+                   bestOpt = opt3;
                    backtrackingPointer[i][j] = new Tuple(i , j-1);
                 }
                 M[i][j] = bestOpt;
             }
         }
-        // show internal stuff
-//        for(int i=0; i<m.size()+1; i++){
-//            System.out.print("\n");
-//            for(int j=0; j<n.size()+1; j++){
-//                System.out.printf(" (x:"+i+" y:"+j+"=> %3d",M[i][j]);
-//                System.out.print(")");
-//            }
-//        }
-//        System.out.print("\n");
-//        for(int i=0; i<m.size()+1; i++){
-//            System.out.print("\n");
-//            for(int j=0; j<n.size()+1; j++){
-//                System.out.print(" (x:"+i+" y:"+j+"=> [x:"+backtrackingPointer[i][j].i+",y:"+backtrackingPointer[i][j].j+"])");
-//            }
-//        }
 
         // Backtracking
         List<Byte> closestSequenceM = new ArrayList();
-        List<Byte> closestSequenceN = new ArrayList();
-        
+        List<Byte> closestSequenceN = new ArrayList();        
         Tuple lastPos = new Tuple(m.size(), n.size());
         
         while(lastPos.i > 0 || lastPos.j > 0){
