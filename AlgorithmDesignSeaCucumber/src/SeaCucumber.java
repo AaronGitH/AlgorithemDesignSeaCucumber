@@ -55,7 +55,7 @@ public class SeaCucumber {
         for(int i=0; i < sequences.size(); i++){
             alignedPairs.put(i, new TreeSet());
             alignedPairs.get(i).add(i);  // no self Alignment
-        }        
+        }
         
         for(int i=0; i<sequences.size(); i++){            
             for(int j=0; j<sequences.size(); j++){                
@@ -113,6 +113,7 @@ public class SeaCucumber {
                    backtrackingPointer[i][j] = new Tuple(i-1, j);
                 }
                 if(opt3 > bestOpt){
+                    bestOpt = opt3;
                    backtrackingPointer[i][j] = new Tuple(i , j-1);
                 }
                 M[i][j] = bestOpt;
@@ -175,7 +176,7 @@ public class SeaCucumber {
         public AlignmentResult(int score, String alignment){
             this.score = score;
             this.alignment = alignment;
-        } 
+        }
     }
     
     static class Tuple{ 
