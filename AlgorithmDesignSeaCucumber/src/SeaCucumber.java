@@ -2,8 +2,12 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 
 /**
@@ -34,7 +38,7 @@ public class SeaCucumber {
                     sequences.add(seq);
                     sequenceIn = "";
                 }
-                sequenceNames.add(fields[0]);
+                sequenceNames.add(fields[0].substring(1,fields[0].length()));
             }else{
                 sequenceIn += fields[0];
             }
@@ -47,59 +51,57 @@ public class SeaCucumber {
         scores = getScores();
         
         
-        //######################################################################
-//        System.out.print("\n"+sequenceNames.get(0)+"--"+sequenceNames.get(1)+": ");
-//        int res = sequenceAlignment(sequences.get(0),sequences.get(1));
-//        System.out.print("\n\n");
+        Map<Integer, SortedSet<Integer>> alignedPairs = new HashMap();
+        for(int i=0; i < sequences.size(); i++){
+            alignedPairs.put(i, new TreeSet());
+            alignedPairs.get(i).add(i);  // no self Alignment
+        }        
         
-        for(int i=0; i<sequences.size(); i++){
-            
+        for(int i=0; i<sequences.size(); i++){            
             for(int j=0; j<sequences.size(); j++){                
-                if(j == i) continue;
-                
-                System.out.print("\n"+sequenceNames.get(i)+"--"+sequenceNames.get(j)+": ");
-                sequenceAlignment(sequences.get(i),sequences.get(j));
-                System.out.print("\n");
+                if(alignedPairs.get(i).contains(j)) continue;
+                alignedPairs.get(i).add(j);
+                alignedPairs.get(j).add(i);
+                AlignmentResult a1 = sequenceAlignment(sequences.get(i),sequences.get(j));
+                AlignmentResult a2 = sequenceAlignment(sequences.get(j),sequences.get(i));
+                if(a1.score >= a2.score)
+                    System.out.print("\n"+sequenceNames.get(i)+"--"+sequenceNames.get(j)+": "+a1.alignment);
+                else
+                    System.out.print("\n"+sequenceNames.get(j)+"--"+sequenceNames.get(i)+": "+a2.alignment);
             }
         }
+        System.out.println();
     }
     
-    // SEQUENCE-ALIGNMENT (m, n, x1, …, xm, y1, …, yn, δ, α)
-    static int sequenceAlignment(List<Byte> m, List<Byte> n){
+    static AlignmentResult sequenceAlignment(List<Byte> m, List<Byte> n){
         int delta = -4; // hardcore hard-code        
         int M[][] = new int[m.size()+1][n.size()+1];
         
         Tuple[][] backtrackingPointer = new Tuple[m.size()+1][n.size()+1];
         
-        // FOR i = 0 TO m
         for(int i=0; i<m.size()+1; i++){
-            // M [i, 0] <- i δ.
             M[i][0] = i * delta;
-            backtrackingPointer[i][0] = new Tuple(i, 0);
+            backtrackingPointer[i][0] = new Tuple(i - 1, 0);
         }
-        // FOR j = 0 TO n
         for(int j=0; j<n.size()+1; j++){
-            // M [0, j] <- j δ.
             M[0][j] = j * delta;
-            backtrackingPointer[0][j] = new Tuple(0, j);
+            backtrackingPointer[0][j] = new Tuple(0, j - 1);
         }
+        backtrackingPointer[0][0] = new Tuple(0, 0);
         
-        // FOR i = 1 TO m
         for(int i=1; i<m.size()+1; i++){
-            // FOR j = 1 TO n
             for(int j=1; j<n.size()+1; j++){
-                // M [i, j] <- min {
-                M[i][j] = Math.max(Math.max(
-                    // α[x_i, y_j] + M [i – 1, j – 1].
-                    scores[m.get(i-1)][n.get(j-1)] + M[i - 1][j - 1],
-                    // δ + M [i – 1, j],
-                    delta + M[i - 1][j]),
-                    // δ + M [i, j – 1]),
-                    delta + M[i][j - 1]);
+//                M[i][j] = Math.max(Math.max(
+//                    // α[x_i, y_j] + M [i – 1, j – 1].
+//                    scores[m.get(i-1)][n.get(j-1)] + M[i - 1][j - 1],
+//                    // δ + M [i – 1, j],
+//                    delta + M[i - 1][j]),
+//                    // δ + M [i, j – 1]),
+//                    delta + M[i][j - 1]);
 
-                int opt1 = M[i - 1][j - 1];
-                int opt2 = M[i - 1][j];
-                int opt3 = M[i][j - 1];
+                int opt1 = scores[m.get(i-1)][n.get(j-1)] + M[i - 1][j - 1];
+                int opt2 = delta + M[i - 1][j];
+                int opt3 = delta + M[i][j - 1];
                 int bestOpt = Integer.MIN_VALUE;
                 
                 if(opt1 > bestOpt){
@@ -112,23 +114,25 @@ public class SeaCucumber {
                 }
                 if(opt3 > bestOpt){
                    backtrackingPointer[i][j] = new Tuple(i , j-1);
-                }                
+                }
+                M[i][j] = bestOpt;
             }
         }
-        for(int i=0; i<m.size()+1; i++){
-            System.out.print("\n");
-            for(int j=0; j<n.size()+1; j++){
-                System.out.printf(" (x:"+i+" y:"+j+"=> %3d",M[i][j]);
-                System.out.print(")");
-            }
-        }
-        System.out.print("\n");
-        for(int i=0; i<m.size()+1; i++){
-            System.out.print("\n");
-            for(int j=0; j<n.size()+1; j++){
-                System.out.print(" (x:"+i+" y:"+j+"=> [x:"+backtrackingPointer[i][j].i+",y:"+backtrackingPointer[i][j].j+"])");
-            }
-        }
+        // show internal stuff
+//        for(int i=0; i<m.size()+1; i++){
+//            System.out.print("\n");
+//            for(int j=0; j<n.size()+1; j++){
+//                System.out.printf(" (x:"+i+" y:"+j+"=> %3d",M[i][j]);
+//                System.out.print(")");
+//            }
+//        }
+//        System.out.print("\n");
+//        for(int i=0; i<m.size()+1; i++){
+//            System.out.print("\n");
+//            for(int j=0; j<n.size()+1; j++){
+//                System.out.print(" (x:"+i+" y:"+j+"=> [x:"+backtrackingPointer[i][j].i+",y:"+backtrackingPointer[i][j].j+"])");
+//            }
+//        }
 
         // Backtracking
         List<Byte> closestSequenceM = new ArrayList();
@@ -150,34 +154,32 @@ public class SeaCucumber {
             if(currPos.i < lastPos.i && currPos.j < lastPos.j){
                 closestSequenceM.add(m.get(lastPos.i-1));
                 closestSequenceN.add(n.get(lastPos.j-1));
-            }     
+            }
             lastPos = currPos;
         }
         
-        System.out.print("\n");
-        System.out.print(M[m.size()][n.size()]+"\n");
+        String alignment = M[m.size()][n.size()]+"\n";
         for(int i = closestSequenceM.size()-1; i >= 0; i--){
-            System.out.print( letter[closestSequenceM.get(i)] );
+            alignment += letter[closestSequenceM.get(i)];
         }
-        System.out.print("\n");
+        alignment += "\n";
         for(int i = closestSequenceM.size()-1; i >= 0; i--){
-            System.out.print( letter[closestSequenceN.get(i)] );
+            alignment += letter[closestSequenceN.get(i)];
         }
-        
-//        for(byte val: closestSequenceM){
-//            System.out.print( letter[val] );
-//        }
-//        System.out.print("\n");
-//        for(byte val: closestSequenceN){
-//            System.out.print( letter[val] );
-//        }
-        // RETURN M [m, n].
-        return M[m.size()][n.size()];
+        return new AlignmentResult(M[m.size()][n.size()],alignment);
+    }
+    
+    static class AlignmentResult{ 
+        public final int score;
+        public final String alignment;
+        public AlignmentResult(int score, String alignment){
+            this.score = score;
+            this.alignment = alignment;
+        } 
     }
     
     static class Tuple{ 
-        public final int i; 
-        public final int j; 
+        public final int i, j;
         public Tuple(int i, int j){
             this.i = i;
             this.j = j; 
