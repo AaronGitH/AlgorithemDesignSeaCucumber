@@ -20,7 +20,7 @@ public class SeaCucumber {
     static char[] letter = {'A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V', 'B', 'Z', 'X', '-'};
     
     public static void main(String[] args) throws FileNotFoundException{
-        //File file = new File("HbB_FASTAs-in.txt"); Scanner sc = new Scanner(file);        
+        //java.io.File file = new java.io.File("HbB_FASTAs-in.txt"); Scanner sc = new Scanner(file);        
         Scanner sc = new Scanner(System.in);
         String sequenceIn = "";
         while(sc.hasNextLine()) {
@@ -44,6 +44,7 @@ public class SeaCucumber {
             seq.add( mapScores(sequenceIn.charAt(i)) );
         }   
         sequences.add(seq);
+        
         scores = getScores();
         
         Map<Integer, SortedSet<Integer>> alignedPairs = new HashMap();
@@ -51,23 +52,19 @@ public class SeaCucumber {
             alignedPairs.put(i, new TreeSet());
             alignedPairs.get(i).add(i);  // no self Alignment
         }        
-        for(int i=0; i<sequences.size(); i++){            
-            for(int j=0; j<sequences.size(); j++){                
+        for(int i=0; i<sequences.size(); i++){
+            for(int j=0; j<sequences.size(); j++){
                 if(alignedPairs.get(i).contains(j)) continue;
                 alignedPairs.get(i).add(j);
                 alignedPairs.get(j).add(i);
-                AlignmentResult a1 = sequenceAlignment(sequences.get(i),sequences.get(j));
-                AlignmentResult a2 = sequenceAlignment(sequences.get(j),sequences.get(i));
-                if(a1.score >= a2.score)
-                    System.out.print("\n"+sequenceNames.get(i)+"--"+sequenceNames.get(j)+": "+a1.alignment);
-                else
-                    System.out.print("\n"+sequenceNames.get(j)+"--"+sequenceNames.get(i)+": "+a2.alignment);
+                System.out.print("\n"+sequenceNames.get(i)+"--"+sequenceNames.get(j)+
+                        ": "+sequenceAlignment(sequences.get(i),sequences.get(j)));
             }
         }
         System.out.println();
     }
     
-    static AlignmentResult sequenceAlignment(List<Byte> m, List<Byte> n){
+    static String sequenceAlignment(List<Byte> m, List<Byte> n){
         int delta = -4; // hardcore hard-code        
         int M[][] = new int[m.size()+1][n.size()+1];        
         Tuple[][] backtrackingPointer = new Tuple[m.size()+1][n.size()+1];
@@ -137,16 +134,7 @@ public class SeaCucumber {
         for(int i = closestSequenceM.size()-1; i >= 0; i--){
             alignment += letter[closestSequenceN.get(i)];
         }
-        return new AlignmentResult(M[m.size()][n.size()],alignment);
-    }
-    
-    static class AlignmentResult{ 
-        public final int score;
-        public final String alignment;
-        public AlignmentResult(int score, String alignment){
-            this.score = score;
-            this.alignment = alignment;
-        }
+        return alignment;
     }
     
     static class Tuple{ 
